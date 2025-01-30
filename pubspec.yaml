@@ -71,6 +71,7 @@ flutter:
     - lib/assets/images/First.png
     - lib/assets/images/Second.png
     - lib/assets/images/Third.png
+    - lib/assets/images/logo.png
     - lib/assets/html/privacy_policy_en.html
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -98,9 +99,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-# flutter_splash_screen:
-#   color: "#FFFFFF"
-#   image: assets/images/logo.png
-#   ios: true
-#   android: true
-#   web: false 
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: lib/assets/images/logo.png
+  ios: true
+  android: true
+  web: false 
