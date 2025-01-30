@@ -1,0 +1,1 @@
+ /Users/mohamadsafar/Documents/magicsportsbox/.dart_tool/flutter_build/7a258936c79bd2b5448b64fbdd2e7dc5/native_assets.yaml: 
