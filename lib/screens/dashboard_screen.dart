@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main_screen.dart';
 import 'standings_screen.dart';
+import 'watch_later_screen.dart';
 
 class Dashboard extends StatefulWidget {
   final String leagueId;
@@ -16,15 +17,16 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0; // Tracks which tab is active
 
-  final List<Widget> _screens = []; // Stores the pages
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _screens.addAll([
+    _screens = [
       MainScreen(leagueId: widget.leagueId), // Matches
       StandingsScreen(leagueId: widget.leagueId, season: widget.season), // Standings
-    ]);
+      const WatchLaterScreen(),
+    ];
   }
 
   void _onItemTapped(int index) {
@@ -55,6 +57,10 @@ class _DashboardState extends State<Dashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             label: 'Standings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.watch_later),
+            label: 'Watch Later',
           ),
         ],
       ),

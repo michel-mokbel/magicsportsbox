@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'standings_screen.dart'; // Import the Standings Screen
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/watch_later.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MainScreen extends StatefulWidget {
   final String leagueId;
@@ -195,35 +198,141 @@ class FixtureCard extends StatelessWidget {
     return name;
   }
 
+  Widget _buildTeamColumn(Map<String, dynamic> team, BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          CachedNetworkImage(
+            imageUrl: team['logo'] ?? '',
+            height: 40,
+            width: 40,
+            placeholder: (context, url) => const Icon(
+              Icons.sports_soccer,
+              size: 40,
+              color: Colors.grey,
+            ),
+            errorWidget: (context, url, error) => const Icon(
+              Icons.sports_soccer,
+              size: 40,
+              color: Colors.grey,
+            ),
+            // Add retry options and caching configuration
+            memCacheHeight: 80, // 2x for high DPI displays
+            memCacheWidth: 80,
+            maxWidthDiskCache: 80,
+            maxHeightDiskCache: 80,
+            // Retry failed requests
+            useOldImageOnUrlChange: true,
+          ),
+          const SizedBox(height: 5),
+          Text(
+            team['name'] ?? 'Unknown Team',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScoreColumn(Map<String, dynamic> score) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        children: [
+          Text(
+            '${score['home'] ?? '0'} - ${score['away'] ?? '0'}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final homeTeam = fixture['teams']['home'];
-    final awayTeam = fixture['teams']['away'];
-    final score = fixture['goals'];
     final fixtureInfo = fixture['fixture'];
+    final teams = fixture['teams'];
+    final score = fixture['score']['fulltime'] ?? {'home': '-', 'away': '-'};
+    final homeTeam = teams['home'];
+    final awayTeam = teams['away'];
     final venue = fixtureInfo['venue'];
-    final referee = fixtureInfo['referee'] ?? 'Unknown Referee';
+    final referee = fixtureInfo['referee'] ?? 'TBD';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       color: Colors.white.withOpacity(0.9),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Match Date
-            Center(
-              child: Text(
-                fixtureInfo['date'].replaceFirst('T', ' ').split('+')[0],
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+            // Match Date and Watch Later Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  fixtureInfo['date'].replaceFirst('T', ' ').split('+')[0],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
+                ValueListenableBuilder(
+                  valueListenable: Hive.box<WatchLater>('watchLater').listenable(),
+                  builder: (context, Box<WatchLater> box, _) {
+                    final isWatchLater = box.values.any((match) => match.fixtureId == fixtureInfo['id'].toString());
+                    
+                    return IconButton(
+                      icon: Icon(
+                        isWatchLater ? Icons.watch_later : Icons.watch_later_outlined,
+                        color: isWatchLater ? Colors.blue : Colors.grey,
+                      ),
+                      onPressed: () {
+                        if (isWatchLater) {
+                          // Remove from watch later
+                          final matchToDelete = box.values.firstWhere(
+                            (match) => match.fixtureId == fixtureInfo['id'].toString()
+                          );
+                          matchToDelete.delete();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Match removed from Watch Later'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          // Add to watch later
+                          final watchLater = WatchLater(
+                            fixtureId: fixtureInfo['id'].toString(),
+                            homeTeam: homeTeam['name'],
+                            awayTeam: awayTeam['name'],
+                            date: fixtureInfo['date'].replaceFirst('T', ' ').split('+')[0],
+                            venue: '${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
+                            homeTeamLogo: homeTeam['logo'],
+                            awayTeamLogo: awayTeam['logo'],
+                          );
+                          box.add(watchLater);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Match added to Watch Later'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 10),
 
@@ -241,55 +350,11 @@ class FixtureCard extends StatelessWidget {
 
             // Stadium & Referee Info
             Text('${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
-                style: TextStyle(color: Colors.black87)),
-            Text(referee, style: TextStyle(color: Colors.grey)),
+                style: const TextStyle(color: Colors.black87)),
+            Text(referee, style: const TextStyle(color: Colors.grey)),
           ],
         ),
       ),
-    );
-  }
-
-  // 🔥 Extracted Function to Display Team Column with Fallback Icon
-  Widget _buildTeamColumn(Map<String, dynamic> team, BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 50,
-          width: 50,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey[300], // Background color for fallback
-          ),
-          child: Image.network(
-            team['logo'],
-            height: 50,
-            width: 50,
-            errorBuilder: (context, error, stackTrace) => Icon(
-              Icons.sports_soccer,
-              size: 30,
-              color: Colors.blue, // Fallback football icon
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          abbreviateTeamName(team['name']),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  // Score Column
-  Widget _buildScoreColumn(Map<String, dynamic> score) {
-    return Column(
-      children: [
-        Text(
-          '${score['home'] ?? '0'} - ${score['away'] ?? '0'}',
-          style: const TextStyle(
-              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-      ],
     );
   }
 }

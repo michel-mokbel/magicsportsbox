@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/watch_later.dart';
 // Future<void> preloadCache() async {
 //   final prefs = await SharedPreferences.getInstance();
 
@@ -24,6 +26,15 @@ void main() async {
 
   // await preloadCache();
   await Firebase.initializeApp();
+
+  // Initialize Hive
+  await Hive.initFlutter();
+  
+  // Register the WatchLater adapter
+  Hive.registerAdapter(WatchLaterAdapter());
+  
+  // Open the watchLater box
+  await Hive.openBox<WatchLater>('watchLater');
 
   // Request App Tracking Transparency permission
   TrackingStatus status =

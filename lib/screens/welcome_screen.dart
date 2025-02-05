@@ -47,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 45,
+                        fontSize: 40,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
                       ),
@@ -64,14 +64,14 @@ class WelcomeScreen extends StatelessWidget {
                     const Text(
                       "Your ultimate guide to sports leagues and matches.",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         color: Colors.white,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 10),
 
               // Get Started Button
               Padding(
