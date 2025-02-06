@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'standings_screen.dart'; // Import the Standings Screen
+import 'dart:convert'; // Import the Standings Screen
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/watch_later.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class MainScreen extends StatefulWidget {
   final String leagueId;
@@ -17,12 +17,96 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late Future<Map<String, List<dynamic>>> groupedFixtures;
-  int _selectedIndex = 0; // Tracks the selected bottom nav item
+  bool _isChatOpen = false;
+  final TextEditingController _messageController = TextEditingController();
+  final List<Map<String, String>> _messages = [];
 
   @override
   void initState() {
     super.initState();
     groupedFixtures = fetchGroupedFixtures();
+  }
+
+  void _toggleChat() {
+    setState(() {
+      _isChatOpen = !_isChatOpen;
+    });
+  }
+
+  Future<void> _sendMessage(String userMessage) async {
+    if (userMessage.isEmpty) return;
+
+    setState(() {
+      _messages.add({'sender': 'user', 'text': userMessage});
+      _messageController.clear();
+    });
+
+    const String apiKey = 'AIzaSyDSDbDdkatl9j_ewY2CiY5scURhh6Gdkbk';
+    const String apiUrl =
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$apiKey';
+
+    final payload = {
+      "contents": [
+        {
+          "parts": [
+            {"text": "You are a sports expert and football analyst."},
+            {
+              "text":
+                  "$userMessage Please provide analysis and insights about football matches, teams, and statistics."
+            }
+          ]
+        }
+      ],
+      "generationConfig": {
+        "stopSequences": ["Title"],
+        "temperature": 0.5,
+        "maxOutputTokens": 200,
+        "topP": 0.8,
+        "topK": 10
+      }
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _messages.add({
+            'sender': 'bot',
+            'text': _formatBotResponse(data['candidates'][0]['content']['parts']
+                    [0]['text'] ??
+                'No response available')
+          });
+        });
+      } else {
+        setState(() {
+          _messages.add({
+            'sender': 'bot',
+            'text': 'Unable to connect to the chat service. Please try again.'
+          });
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _messages.add({'sender': 'bot', 'text': 'Error: $e'});
+      });
+    }
+  }
+
+  String _formatBotResponse(String response) {
+    response = response.replaceAllMapped(
+        RegExp(r'\*\*(.*?)\*\*'), (match) => '<b>${match.group(1)}</b>');
+    response = response.replaceAllMapped(
+        RegExp(r'\*\s(.*)'), (match) => '<li>${match.group(1)}</li>');
+    response = response.replaceAllMapped(
+        RegExp(r'(<li>.*?</li>)'), (match) => '<ul>${match.group(0)}</ul>');
+    response = response.replaceAll('\n', '<br>');
+    return response;
   }
 
   Future<Map<String, List<dynamic>>> fetchGroupedFixtures() async {
@@ -93,11 +177,15 @@ class _MainScreenState extends State<MainScreen> {
                 elevation: 0,
                 title: const Text(
                   'Matches',
-                  style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.blue, fontWeight: FontWeight.bold),
                 ),
                 centerTitle: true,
                 leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.blue,),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.blue,
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -136,14 +224,16 @@ class _MainScreenState extends State<MainScreen> {
                     }
 
                     final groupedData = snapshot.data!;
-                    final reversedKeys = groupedData.keys.toList().reversed.toList();
+                    final reversedKeys =
+                        groupedData.keys.toList().reversed.toList();
 
                     return ListView.builder(
                       padding: EdgeInsets.zero, // 🔥 Remove extra padding
                       itemCount: reversedKeys.length,
                       itemBuilder: (context, index) {
                         String date = reversedKeys[index];
-                        List<dynamic> fixtures = groupedData[date]!.reversed.toList();
+                        List<dynamic> fixtures =
+                            groupedData[date]!.reversed.toList();
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +242,9 @@ class _MainScreenState extends State<MainScreen> {
                               padding: EdgeInsets.only(
                                 left: 10.0,
                                 right: 10.0,
-                                top: index == 0 ? 0 : 5.0, // 🔥 Ensure first item is closer
+                                top: index == 0
+                                    ? 0
+                                    : 5.0, // 🔥 Ensure first item is closer
                                 bottom: 5.0,
                               ),
                               child: Text(
@@ -164,7 +256,8 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
                             ),
-                            ...fixtures.map((fixture) => FixtureCard(fixture: fixture)),
+                            ...fixtures.map(
+                                (fixture) => FixtureCard(fixture: fixture)),
                           ],
                         );
                       },
@@ -173,6 +266,120 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ],
+          ),
+
+          if (_isChatOpen)
+            Positioned(
+              bottom: 70,
+              right: 10,
+              left: 10,
+              child: Container(
+                height: 600,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sports Assistant',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: _toggleChat,
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.blue),
+                    if (_messages.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'Hello! I can provide you with information about football matches, teams, and statistics. How can I assist you today?',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          return Align(
+                            alignment: message['sender'] == 'user'
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 5,
+                                horizontal: 10,
+                              ),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: message['sender'] == 'user'
+                                    ? Colors.blue
+                                    : Colors.grey[800],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: message['sender'] == 'bot'
+                                  ? Html(data: message['text'] ?? '', style: {
+                                      "body": Style(color: Colors.white)
+                                    })
+                                  : Text(
+                                      message['text'] ?? '',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Ask about matches, teams, or stats...',
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.send, color: Colors.blue),
+                          onPressed: () =>
+                              _sendMessage(_messageController.text),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Chat button
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: FloatingActionButton(
+              onPressed: _toggleChat,
+              backgroundColor: Colors.blue,
+              child: Icon(
+                _isChatOpen ? Icons.close : Icons.chat,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
@@ -287,21 +494,24 @@ class FixtureCard extends StatelessWidget {
                   ),
                 ),
                 ValueListenableBuilder(
-                  valueListenable: Hive.box<WatchLater>('watchLater').listenable(),
+                  valueListenable:
+                      Hive.box<WatchLater>('watchLater').listenable(),
                   builder: (context, Box<WatchLater> box, _) {
-                    final isWatchLater = box.values.any((match) => match.fixtureId == fixtureInfo['id'].toString());
-                    
+                    final isWatchLater = box.values.any((match) =>
+                        match.fixtureId == fixtureInfo['id'].toString());
+
                     return IconButton(
                       icon: Icon(
-                        isWatchLater ? Icons.watch_later : Icons.watch_later_outlined,
+                        isWatchLater
+                            ? Icons.watch_later
+                            : Icons.watch_later_outlined,
                         color: isWatchLater ? Colors.blue : Colors.grey,
                       ),
                       onPressed: () {
                         if (isWatchLater) {
                           // Remove from watch later
-                          final matchToDelete = box.values.firstWhere(
-                            (match) => match.fixtureId == fixtureInfo['id'].toString()
-                          );
+                          final matchToDelete = box.values.firstWhere((match) =>
+                              match.fixtureId == fixtureInfo['id'].toString());
                           matchToDelete.delete();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -315,8 +525,11 @@ class FixtureCard extends StatelessWidget {
                             fixtureId: fixtureInfo['id'].toString(),
                             homeTeam: homeTeam['name'],
                             awayTeam: awayTeam['name'],
-                            date: fixtureInfo['date'].replaceFirst('T', ' ').split('+')[0],
-                            venue: '${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
+                            date: fixtureInfo['date']
+                                .replaceFirst('T', ' ')
+                                .split('+')[0],
+                            venue:
+                                '${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
                             homeTeamLogo: homeTeam['logo'],
                             awayTeamLogo: awayTeam['logo'],
                           );
@@ -349,7 +562,8 @@ class FixtureCard extends StatelessWidget {
             const SizedBox(height: 10),
 
             // Stadium & Referee Info
-            Text('${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
+            Text(
+                '${venue['name'] ?? 'Unknown Stadium'}, ${venue['city'] ?? ''}',
                 style: const TextStyle(color: Colors.black87)),
             Text(referee, style: const TextStyle(color: Colors.grey)),
           ],

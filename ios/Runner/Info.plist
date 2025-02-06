@@ -63,5 +63,13 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app needs access to location to find sports bars near you.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>This app needs access to location to find sports bars near you even when the app is in background.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>This app needs access to location to find sports bars near you.</string>
+		<key>io.flutter.embedded_views_preview</key>
+		<true/>
 	</dict>
 </plist>

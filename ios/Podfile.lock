@@ -43,6 +43,21 @@ PODS:
   - FirebaseRemoteConfigInterop (11.7.0)
   - FirebaseSharedSwift (11.7.0)
   - Flutter (1.0.0)
+  - flutter_native_splash (2.4.3):
+    - Flutter
+  - geolocator_apple (1.2.0):
+    - Flutter
+  - Google-Maps-iOS-Utils (5.0.0):
+    - GoogleMaps (~> 8.0)
+  - google_maps_flutter_ios (0.0.1):
+    - Flutter
+    - Google-Maps-iOS-Utils (< 7.0, >= 5.0)
+    - GoogleMaps (< 10.0, >= 8.4)
+  - GoogleMaps (8.4.0):
+    - GoogleMaps/Maps (= 8.4.0)
+  - GoogleMaps/Base (8.4.0)
+  - GoogleMaps/Maps (8.4.0):
+    - GoogleMaps/Base
   - GoogleUtilities/Environment (8.0.2):
     - GoogleUtilities/Privacy
   - GoogleUtilities/Logger (8.0.2):
@@ -60,6 +75,11 @@ PODS:
   - PromisesObjC (2.4.0)
   - share_plus (0.0.1):
     - Flutter
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_ios (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
@@ -67,8 +87,13 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_remote_config (from `.symlinks/plugins/firebase_remote_config/ios`)
   - Flutter (from `Flutter`)
+  - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
   trunk:
@@ -81,6 +106,8 @@ SPEC REPOS:
     - FirebaseRemoteConfig
     - FirebaseRemoteConfigInterop
     - FirebaseSharedSwift
+    - Google-Maps-iOS-Utils
+    - GoogleMaps
     - GoogleUtilities
     - PromisesObjC
 
@@ -95,10 +122,20 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_remote_config/ios"
   Flutter:
     :path: Flutter
+  flutter_native_splash:
+    :path: ".symlinks/plugins/flutter_native_splash/ios"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/ios"
+  google_maps_flutter_ios:
+    :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
   app_tracking_transparency: e169b653478da7bb15a6c61209015378ca73e375
@@ -115,11 +152,18 @@ SPEC CHECKSUMS:
   FirebaseRemoteConfigInterop: ca12abf9da0003efd3a476b2dff4f7a04fd31b4f
   FirebaseSharedSwift: a45efd84d60ebbfdcdbaebc66948af3630459e62
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_native_splash: f71420956eb811e6d310720fee915f1d42852e7a
+  geolocator_apple: 9bcea1918ff7f0062d98345d238ae12718acfbc1
+  Google-Maps-iOS-Utils: 66d6de12be1ce6d3742a54661e7a79cb317a9321
+  google_maps_flutter_ios: e31555a04d1986ab130f2b9f24b6cdc861acc6d3
+  GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
+  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
+  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
 
-PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
+PODFILE CHECKSUM: 1959d098c91d8a792531a723c4a9d7e9f6a01e38
 
 COCOAPODS: 1.16.2

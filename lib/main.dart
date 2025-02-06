@@ -6,16 +6,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/watch_later.dart';
-// Future<void> preloadCache() async {
-//   final prefs = await SharedPreferences.getInstance();
 
-//   if (!prefs.containsKey("preloaded")) {
-//     await MovieService.fetchAllByType("movie");
-//     await MovieService.fetchAllByType("tv_show");
-
-//     prefs.setBool("preloaded", true);
-//   }
-// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main_screen.dart';
 import 'standings_screen.dart';
 import 'watch_later_screen.dart';
+import 'sports_bars_screen.dart';
 
 class Dashboard extends StatefulWidget {
   final String leagueId;
@@ -10,7 +11,7 @@ class Dashboard extends StatefulWidget {
   const Dashboard({Key? key, required this.leagueId, required this.season})
       : super(key: key);
 
-  @override
+  @override 
   _DashboardState createState() => _DashboardState();
 }
 
@@ -26,6 +27,7 @@ class _DashboardState extends State<Dashboard> {
       MainScreen(leagueId: widget.leagueId), // Matches
       StandingsScreen(leagueId: widget.leagueId, season: widget.season), // Standings
       const WatchLaterScreen(),
+      const SportsBarScreen(),
     ];
   }
 
@@ -61,6 +63,10 @@ class _DashboardState extends State<Dashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.watch_later),
             label: 'Watch Later',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sports_bar),
+            label: 'Sports Bars',
           ),
         ],
       ),

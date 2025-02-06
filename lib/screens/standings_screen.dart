@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class StandingsScreen extends StatefulWidget {
   final String leagueId;
@@ -26,19 +27,32 @@ class _StandingsScreenState extends State<StandingsScreen> {
     final url =
         'https://api-football-v1.p.rapidapi.com/v3/standings?league=$leagueId&season=$season';
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'x-rapidapi-key': 'f5a78660bbmsh8da2d99f0a17edbp1615aejsn3221c36093ae', // Replace with your API key
-        'x-rapidapi-host': 'api-football-v1.p.rapidapi.com',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'x-rapidapi-key': 'f5a78660bbmsh8da2d99f0a17edbp1615aejsn3221c36093ae',
+          'x-rapidapi-host': 'api-football-v1.p.rapidapi.com',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['response'][0]['league']['standings'][0];
-    } else {
-      throw Exception('Failed to load standings');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['response'] == null || 
+            data['response'].isEmpty || 
+            data['response'][0]['league'] == null ||
+            data['response'][0]['league']['standings'] == null ||
+            data['response'][0]['league']['standings'].isEmpty) {
+          return [];
+        }
+        return data['response'][0]['league']['standings'][0] ?? [];
+      } else {
+        print('API Error: ${response.statusCode} - ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching standings: $e');
+      return [];
     }
   }
 
@@ -205,8 +219,26 @@ class _StandingsScreenState extends State<StandingsScreen> {
                                     padding: const EdgeInsets.all(8),
                                     child: Row(
                                       children: [
-                                        Image.network(team['team']['logo'],
-                                            height: 25, width: 25),
+                                        CachedNetworkImage(
+                                          imageUrl: team['team']['logo'] ?? '',
+                                          height: 25,
+                                          width: 25,
+                                          placeholder: (context, url) => const Icon(
+                                            Icons.sports_soccer,
+                                            size: 25,
+                                            color: Colors.grey,
+                                          ),
+                                          errorWidget: (context, url, error) => const Icon(
+                                            Icons.sports_soccer,
+                                            size: 25,
+                                            color: Colors.grey,
+                                          ),
+                                          memCacheHeight: 50,
+                                          memCacheWidth: 50,
+                                          maxWidthDiskCache: 50,
+                                          maxHeightDiskCache: 50,
+                                          useOldImageOnUrlChange: true,
+                                        ),
                                         const SizedBox(width: 5),
                                         Expanded(
                                           child: Text(
