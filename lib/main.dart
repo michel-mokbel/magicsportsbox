@@ -7,45 +7,46 @@ import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/watch_later.dart';
 
-
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // RequestConfiguration configuration = RequestConfiguration(
-  //   testDeviceIds: ['00008030-0004481C1185402E'],
-  // );
-  // MobileAds.instance.updateRequestConfiguration(configuration);
 
-  // await preloadCache();
+  // Initialize Firebase first
   await Firebase.initializeApp();
 
   // Initialize Hive
   await Hive.initFlutter();
-  
-  // Register the WatchLater adapter
   Hive.registerAdapter(WatchLaterAdapter());
-  
-  // Open the watchLater box
   await Hive.openBox<WatchLater>('watchLater');
 
-  // Request App Tracking Transparency permission
-  TrackingStatus status =
-      await AppTrackingTransparency.requestTrackingAuthorization();
-  bool isTrackingAllowed = status == TrackingStatus.authorized;
-
-  if (isTrackingAllowed) {
-    // Fetch AppsFlyer dev_key from Firebase Remote Config
-    String devKey = await fetchDevKeyFromRemoteConfig();
-    initAppsFlyer(devKey, isTrackingAllowed);
+  // Request tracking permission
+  await Future.delayed(const Duration(milliseconds: 500));
+  final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+  if (status == TrackingStatus.notDetermined) {
+    await Future.delayed(const Duration(milliseconds: 200));
+    final newStatus = await AppTrackingTransparency.requestTrackingAuthorization();
+    final isTrackingAllowed = newStatus == TrackingStatus.authorized;
+    
+    if (isTrackingAllowed) {
+      String devKey = await fetchDevKeyFromRemoteConfig();
+      initAppsFlyer(devKey, isTrackingAllowed);
+    }
+  } else {
+    final isTrackingAllowed = status == TrackingStatus.authorized;
+    if (isTrackingAllowed) {
+      String devKey = await fetchDevKeyFromRemoteConfig();
+      initAppsFlyer(devKey, isTrackingAllowed);
+    }
   }
+
   runApp(const MyApp());
 }
-
 
 Future<String> fetchDevKeyFromRemoteConfig() async {
   final FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.instance;
   try {
     await remoteConfig.setDefaults(<String, dynamic>{
-      'dev_key': 'TVuiYiPd4Bu5wzUuZwTymX', // Default value if Remote Config fails
+      'dev_key':
+          'TVuiYiPd4Bu5wzUuZwTymX', // Default value if Remote Config fails
     });
     await remoteConfig.fetchAndActivate();
     String devKey = remoteConfig.getString('dev_key');
@@ -78,8 +79,8 @@ void initAppsFlyer(String devKey, bool isTrackingAllowed) {
         registerOnDeepLinkingCallback: true);
     appsflyerSdk.startSDK(
       onSuccess: () => print("AppsFlyer SDK initialized successfully."),
-      onError: (int errorCode, String errorMessage) =>
-          print("Error initializing AppsFlyer SDK: Code $errorCode - $errorMessage"),
+      onError: (int errorCode, String errorMessage) => print(
+          "Error initializing AppsFlyer SDK: Code $errorCode - $errorMessage"),
     );
   } else {
     print("Tracking denied, skipping AppsFlyer initialization.");
