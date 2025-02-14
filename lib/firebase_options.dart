@@ -50,19 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBjwV5NccFqfchdsi9moXxJWXjWjBc_O6A',
-    appId: '1:401678566917:android:d0c6493fb026734ee2be6c',
-    messagingSenderId: '401678566917',
-    projectId: 'movie-magic-box',
-    storageBucket: 'movie-magic-box.firebasestorage.app',
+    apiKey: 'AIzaSyBZC5_YQ2J5ZRFtHY7r9nwzJMCRJjopwhM',
+    appId: '1:574634702637:android:8432ffd5a80eb1f50805a4',
+    messagingSenderId: '574634702637',
+    projectId: 'sports-magic-box',
+    storageBucket: 'sports-magic-box.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDn0wP9eMaG8XmG9SoERvWZudkFRzsEtrw',
-    appId: '1:401678566917:ios:8e0d7e97acc173e8e2be6c',
-    messagingSenderId: '401678566917',
-    projectId: 'movie-magic-box',
-    storageBucket: 'movie-magic-box.firebasestorage.app',
+    apiKey: 'AIzaSyAjgA9NkX1a-PlsEB4nGkzxrivAmOspRZs',
+    appId: '1:574634702637:ios:2aa9936238d38c960805a4',
+    messagingSenderId: '574634702637',
+    projectId: 'sports-magic-box',
+    storageBucket: 'sports-magic-box.firebasestorage.app',
     iosBundleId: 'com.appadsrocket.sportsmagicbox',
   );
+
 }
